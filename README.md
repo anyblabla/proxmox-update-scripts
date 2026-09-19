@@ -4,6 +4,13 @@ Deux scripts Bash pour automatiser la mise à jour des **machines virtuelles (VM
 
 Les scripts intègrent notamment un mode simulation, la détection et la gestion des redémarrages nécessaires, ainsi que l'envoi de notifications push via **Gotify**.
 
+## Dépôts
+
+Le projet est disponible sur GitHub et synchronisé sur l'instance Gitea de BlablaLinux.
+
+* **GitHub :** https://github.com/anyblabla/proxmox-update-scripts
+* **Gitea :** https://gitea.blablalinux.be/blablalinux/proxmox-update-scripts
+
 📖 **Documentation complète :**
 https://wiki.blablalinux.be/fr/script-update-lxc-vm-proxmox
 
@@ -84,11 +91,18 @@ Les machines concernées seront alors ignorées lors de l'exécution globale du 
 
 ## Installation
 
-Clonez le dépôt sur votre nœud Proxmox :
+### Depuis GitHub
 
 ```bash
-git clone https://github.com/anyblabla/scripts-proxmox-update.git
-cd scripts-proxmox-update
+git clone https://github.com/anyblabla/proxmox-update-scripts.git
+cd proxmox-update-scripts
+```
+
+### Depuis Gitea
+
+```bash
+git clone https://gitea.blablalinux.be/blablalinux/proxmox-update-scripts.git
+cd proxmox-update-scripts
 ```
 
 Rendez ensuite les scripts exécutables :
@@ -96,8 +110,6 @@ Rendez ensuite les scripts exécutables :
 ```bash
 chmod +x update_vms.sh update_lxcs.sh
 ```
-
-> Adaptez l'URL du dépôt ci-dessus si le dépôt GitHub utilise un autre nom.
 
 ---
 
