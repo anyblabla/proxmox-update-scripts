@@ -2,10 +2,11 @@
 #
 # SCRIPT : update_lxcs.sh
 # OBJECTIF : Mettre à jour tous les conteneurs LXC Debian/Ubuntu en cours d'exécution
-# AUTEUR : Amaury aka BlablaLinux
+#
 # ==============================================================================
 
 # --- PARAMÈTRES DE GOTIFY ---
+ENABLE_GOTIFY=true # Mettre à "false" pour désactiver totalement les notifications Gotify
 GOTIFY_URL="https://gotify.votre-domaine.tld"
 GOTIFY_TOKEN="VOTRE_TOKEN_GOTIFY"
 
@@ -22,6 +23,9 @@ exec 1>>$LOGFILE 2>&1
 
 # --- FONCTION DE NOTIFICATION GOTIFY (MÉTHODE FORM-DATA) ---
 send_gotify_notification() {
+    if [ "$ENABLE_GOTIFY" != "true" ]; then
+        return 0
+    fi
     local title="$1"
     local message="$2"
     local priority="$3"
@@ -45,13 +49,13 @@ UPDATE_COMMAND_DRY_RUN="export DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 && 
 
 # Commande réelle de mise à jour (Correction du statut de sortie)
 UPDATE_COMMAND_REAL="export DEBIAN_FRONTEND=noninteractive LC_ALL=C.UTF-8 && \
-                   apt-get update -y --allow-releaseinfo-change && \
-                   apt-get full-upgrade -y && \
-                   apt-get autoremove -y && \
-                   apt-get clean && \
-                   STATUS=\$? && \
-                   (snap refresh 2>/dev/null || true) && \
-                   exit \$STATUS"
+                     apt-get update -y --allow-releaseinfo-change && \
+                     apt-get full-upgrade -y && \
+                     apt-get autoremove -y && \
+                     apt-get clean && \
+                     STATUS=\$? && \
+                     (snap refresh 2>/dev/null || true) && \
+                     exit \$STATUS"
 
 REBOOT_CHECK_COMMAND="[ -f /var/run/reboot-required ] && echo 'REBOOT_YES' || echo 'REBOOT_NO'"
 
