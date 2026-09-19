@@ -11,9 +11,6 @@ Le projet est disponible sur GitHub et synchronisé sur l'instance Gitea de Blab
 * **GitHub :** https://github.com/anyblabla/proxmox-update-scripts
 * **Gitea :** https://gitea.blablalinux.be/blablalinux/proxmox-update-scripts
 
-📖 **Documentation complète :**
-https://wiki.blablalinux.be/fr/script-update-lxc-vm-proxmox
-
 🌐 **Autres services BlablaLinux :**
 https://blablalinux.be/mes-services-publics/
 
