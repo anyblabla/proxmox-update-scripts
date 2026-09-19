@@ -2,7 +2,7 @@
 
 Deux scripts Bash pour automatiser la mise à jour des **machines virtuelles (VMs)** et des **conteneurs LXC** sous **Proxmox VE**, avec prise en charge de Debian et Ubuntu.
 
-Les scripts intègrent notamment un mode simulation, la détection et la gestion des redémarrages nécessaires, ainsi que l'envoi de notifications push via **Gotify**.
+Les scripts intègrent notamment un mode simulation, la détection et la gestion des redémarrages nécessaires, ainsi que l'envoi de notifications push via **Gotify** (optionnel).
 
 ## Dépôts
 
@@ -16,17 +16,25 @@ https://blablalinux.be/mes-services-publics/
 
 ---
 
+## ⚠️ Avertissement important — Clusters avec HA
+
+**Il est fortement déconseillé d'utiliser ces scripts sur un cluster Proxmox ayant la Haute Disponibilité (HA) activée.** Les actions de redémarrage (`qm shutdown`/`qm start` ou `pct reboot`) pourraient être interprétées comme des défaillances par le système HA, entraînant des conflits ou des migrations imprévues.
+
+---
+
 ## Fonctionnalités
 
 * **Mise à jour automatisée** des systèmes Debian/Ubuntu avec `apt-get full-upgrade`.
 * **Vérification préalable** du nombre de paquets à mettre à jour afin d'éviter les opérations inutiles.
 * **Détection des redémarrages nécessaires** via `/var/run/reboot-required`.
-* **Redémarrage propre** des VMs et conteneurs, avec bascule sur un arrêt forcé en cas de besoin.
+* **Redémarrage géré** des VMs et conteneurs :
+  * VMs : arrêt propre (`qm shutdown`) avec bascule automatique sur un arrêt forcé (`qm stop`) en cas d'échec, puis redémarrage.
+  * LXC : redémarrage direct via `pct reboot`.
 * **Mode ciblé** permettant de mettre à jour une seule VM ou un seul conteneur en indiquant son ID.
 * **Exclusion de machines** grâce à une liste d'IDs configurables.
-* **Notifications Gotify** avec un récapitulatif de l'opération :
+* **Notifications Gotify** (activables/désactivables) avec un récapitulatif de l'opération :
 
-  * statut global ;
+  * statut global (y compris quand aucune mise à jour n'était nécessaire) ;
   * nombre de machines mises à jour ;
   * redémarrages effectués ;
   * erreurs éventuelles.
@@ -53,7 +61,8 @@ Ils nécessitent notamment :
 * `qm` pour la gestion des VMs ;
 * `pct` pour la gestion des conteneurs LXC ;
 * des systèmes invités basés sur Debian ou Ubuntu ;
-* un serveur Gotify si les notifications sont utilisées.
+* **le QEMU Guest Agent installé et fonctionnel** dans chaque VM (`update_vms.sh` communique avec les VMs exclusivement via `qm guest exec` — sans l'agent, le script échoue silencieusement) ;
+* un serveur Gotify si les notifications sont utilisées (facultatif, voir ci-dessous).
 
 Les scripts doivent être exécutés avec les privilèges nécessaires à la gestion des VMs et conteneurs.
 
@@ -63,14 +72,17 @@ Les scripts doivent être exécutés avec les privilèges nécessaires à la ges
 
 Avant la première utilisation, éditez les variables de configuration présentes dans les scripts.
 
-### Gotify
+### Gotify (optionnel)
 
-Renseignez l'URL de votre serveur Gotify et le token de l'application :
+Les notifications Gotify ne sont pas obligatoires : elles n'interviennent qu'en toute fin d'exécution et n'ont aucun impact sur la mise à jour elle-même.
 
 ```bash
+ENABLE_GOTIFY=true # Mettre à "false" pour désactiver totalement les notifications
 GOTIFY_URL="https://gotify.votre-domaine.tld"
 GOTIFY_TOKEN="VOTRE_TOKEN_GOTIFY"
 ```
+
+Si `ENABLE_GOTIFY=false`, `GOTIFY_URL` et `GOTIFY_TOKEN` peuvent rester tels quels : aucune requête réseau n'est effectuée.
 
 ### Exclusion de machines
 
@@ -151,9 +163,11 @@ Les scripts peuvent être exécutés automatiquement via **Cron** sur votre nœu
 Par exemple, pour lancer quotidiennement la mise à jour des VMs à **06:00** et celle des conteneurs LXC à **07:00** :
 
 ```cron
-0 6 * * * /chemin/vers/update_vms.sh
-0 7 * * * /chemin/vers/update_lxcs.sh
+0 6 * * * /usr/local/bin/update_vms.sh
+0 7 * * * /usr/local/bin/update_lxcs.sh
 ```
+
+Adaptez le chemin `/usr/local/bin/` à l'emplacement où vous avez placé les scripts.
 
 Pour une exécution avec les privilèges nécessaires, il est recommandé de placer ces tâches dans la crontab de `root` :
 
@@ -165,7 +179,7 @@ sudo crontab -e
 
 ## Notifications Gotify
 
-Lorsque Gotify est configuré, les scripts envoient un rapport à la fin de l'opération.
+Lorsque Gotify est activé (`ENABLE_GOTIFY=true`) et configuré, les scripts envoient un rapport à la fin de l'opération — y compris lorsqu'aucune mise à jour n'était nécessaire (rapport "RAS"), afin de confirmer que l'exécution automatisée a bien eu lieu.
 
 Le rapport permet notamment de connaître :
 
